@@ -2,10 +2,6 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-  background-image: url("/bg.svg");
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
 }
 .glass-card {
   background: rgba(255, 255, 255, 0.05);
