@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
-import Link from "next/link";
 import toast from "react-hot-toast";
 import {
   getTasks,
@@ -23,44 +22,73 @@ export default function Home() {
 
   async function handleAddTask(e) {
     e.preventDefault();
-    const taskInput = formRef.current[0].value;
-    if (taskInput.trim() === "") {
+    if (formRef.current[0].value.trim() === "") {
       toast.error("Task cannot be empty");
       return;
     }
-    await addTask({
-      title: taskInput,
-      isCompleted: false,
-    });
-    formRef.current.reset();
-    const data = await getTasks();
-    setTasks(data);
-    toast.success("Task added successfully");
+    toast.promise(
+      addTask({
+        title: formRef.current[0].value,
+        isCompleted: false,
+      }).then(async () => {
+        const data = await getTasks();
+        setTasks(data);
+      }),
+      {
+        loading: "Adding task...",
+        success: "Task added successfully",
+        error: "Error adding task",
+      }
+    );
+    formRef.current[0].value = "";
   }
+
   async function handleToggleTask(task) {
-    await updateTask(task.id, {
-      ...task,
-      isCompleted: !task.isCompleted,
-    });
-    const data = await getTasks();
-    setTasks(data);
-    toast.success("Task updated successfully");
+    toast.promise(
+      updateTask(task.id, {
+        ...task,
+        isCompleted: !task.isCompleted,
+      }).then(async () => {
+        const data = await getTasks();
+        setTasks(data);
+      }),
+      {
+        loading: "Updating task...",
+        success: "Task updated successfully",
+        error: "Error updating task",
+      }
+    );
   }
+
   async function handleDeleteTask(id) {
-    await deleteTask(id);
-    const data = await getTasks();
-    setTasks(data);
-    toast.success("Task deleted successfully");
+    toast.promise(
+      deleteTask(id).then(async () => {
+        const data = await getTasks();
+        setTasks(data);
+      }),
+      {
+        loading: "Deleting task...",
+        success: "Task deleted successfully",
+        error: "Error deleting task",
+      }
+    );
   }
+
   return (
-    <main className="h-screen w-screen grid place-items-center">
-      <div className="bg-gray-50 shadow-md w-[95%] sm:w-[80%] md:w-[70%] lg:w-[60%] xl:w-[40%] p-4 rounded-lg flex flex-col items-center justify-center">
+    <main className="h-[calc(100vh-36px)] flex flex-col items-center justify-center">
+      <h1 className="text-5xl text-gray-600 font-extralight m-0 pb-2">
+        To Do List
+      </h1>
+      <div
+        className="bg-white shadow-md w-[95%] sm:w-[80%] md:w-[70%] lg:w-[60%] xl:w-[40%] min-h-au
+       max-h-[70%] lg:max-h-[65%] xl:max-h-[60%] p-3 md:p-4 rounded-lg flex flex-col items-center justify-center"
+      >
         <form
           ref={formRef}
-          className="w-full h-1/5 pb-4 flex items-center justify-center gap-2"
+          className="w-full h-[40px] mb-2 flex items-center justify-center gap-2"
         >
           <input
-            className="flex-1 placeholder:text-gray-400 border border-gray-400 focus:outline-none focus:border-violet-500 rounded-full text-gray-800 text-center bg-transparent py-1.5 transition-colors duration-300"
+            className="flex-1 placeholder:text-gray-400 border border-gray-400 focus:outline-none focus:border-violet-500 rounded-full text-gray-800 text-center bg-transparent h-[40px] transition-colors duration-300"
             type="text"
             placeholder="Add a task...."
           />
@@ -72,22 +100,23 @@ export default function Home() {
             Add
           </button>
         </form>
-        <div className="w-full h-4/5">
-          <ul className="overflow-y-auto mx-auto rounded-md" id="list">
+        <div className="w-full flex-1 overflow-y-auto">
+          <ul className=" mx-auto rounded-md" id="list">
             {tasks?.map((task) => (
               <li
                 key={task.id}
-                className="list-items flex items-center gap-4 p-2 border-b border-violet-400"
+                className="list-items flex items-center gap-4 p-2 border-b border-gray-300"
               >
                 <input
                   type="checkbox"
                   name="checkbox"
+                  className="cursor-pointer"
                   checked={task.isCompleted}
                   onChange={() => handleToggleTask(task)}
                 />
                 <span className="text-gray-800">{task.title}</span>
                 <button
-                  className="ml-auto cursor-pointer text-red-600 font-bold"
+                  className="ml-auto cursor-pointer text-red-400 font-bold"
                   onClick={() => handleDeleteTask(task.id)}
                 >
                   X
@@ -97,18 +126,6 @@ export default function Home() {
           </ul>
         </div>
       </div>
-      <footer className="absolute bottom-0 text-center text-gray-600">
-        <p className="mb-3">
-          Developed by
-          <Link
-            href="https://github.com/rabbi6272"
-            target="_blank"
-            className="ml-1 hover:underline"
-          >
-            Rabbi
-          </Link>
-        </p>
-      </footer>
     </main>
   );
 }
